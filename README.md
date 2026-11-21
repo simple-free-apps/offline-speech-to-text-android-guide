@@ -2,7 +2,7 @@
 
 This guide compares practical on-device speech-recognition routes and explains how to measure them cleanly on Android hardware. Results depend heavily on model size, quantization, language, chipset, thermal state, and audio profile; no speed ranking is meaningful without those details.
 
-**Contents:** [At a glance](#at-a-glance) · [RTF calculator CLI](#reading-rtf--running-the-calculator) · [Reproducible procedure](#reproducible-procedure) · [Privacy checklist](#privacy-checklist) · [Ready-to-use app (Inkear)](#a-ready-to-use-offline-app-inkear) · [Studio catalog & services](#more-from-gr8-apps--games-studio)
+**Contents:** [At a glance](#at-a-glance) · [Official Whisper GGML disk sizes](#official-whispercpp-ggml-model-sizes) · [Android API & 16 kHz PCM pipeline](#android-api-31-check--16-khz-audio-pipeline) · [RTF calculator CLI](#reading-rtf--running-the-calculator) · [Reproducible procedure](#reproducible-procedure) · [Privacy checklist](#privacy-checklist) · [Ready-to-use app (Inkear)](#a-ready-to-use-offline-app-inkear) · [Studio catalog & services](#more-from-gr8-apps--games-studio)
 
 ## At a glance
 
@@ -13,22 +13,70 @@ This guide compares practical on-device speech-recognition routes and explains h
 | sherpa-onnx | Offline ASR and streaming recipes, with Android examples and multiple model families | ONNX Runtime based; select a model explicitly for target languages and device | Report model family, runtime, input format, latency and quality on the same test set |
 | Vosk | Offline toolkit with Android examples and downloadable language models | Compact streaming-oriented route; available model/language choices differ | Include model size, language, RTF, memory and transcription quality |
 
+## Official `whisper.cpp` GGML model sizes
+
+Published disk sizes from upstream [`ggml-org/whisper.cpp`](https://github.com/ggml-org/whisper.cpp/blob/master/models/README.md) (exact runtime RAM depends on backend, context buffer, and thread count):
+
+| Model | Disk Size (Upstream) | Best Fit on Android |
+|---|---|---|
+| `tiny` / `tiny.en` | `75 MiB` | Ultra-fast voice notes & older devices |
+| `base` / `base.en` | `142 MiB` | Balanced default for bundled offline installers |
+| `small` / `small.en` | `466 MiB` | Higher accuracy on mid-range & modern ARM64 phones |
+| `large-v3-q5_0` | `1.1 GiB` | Quantized high-accuracy multilingual transcription |
+| `medium` / `large-v3-turbo` | `1.5 GiB` | High-memory devices needing higher multilingual fidelity |
+
+## Android API 31+ check & 16 kHz audio pipeline
+
+Before relying on the system recognizer offline, verify on-device availability explicitly (API 31+):
+
+```kotlin
+import android.content.Context
+import android.os.Build
+import android.speech.SpeechRecognizer
+
+fun canTranscribeStrictlyOnDevice(context: Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        SpeechRecognizer.isOnDeviceRecognitionAvailable(context)
+    } else {
+        false
+    }
+}
+```
+
+For JNI/NDK engines (`whisper.cpp`, `sherpa-onnx`, `Vosk`), normalize imported recordings (`MP3`, `M4A`, `OGG/Opus`, `MP4`) with `MediaExtractor` + `MediaCodec` and resample to **16 kHz mono 16-bit PCM (`32-bit float [-1.0, 1.0]` for `whisper.cpp`)** before timing inference separately from file decoding.
+
 ### Reading RTF & running the calculator
 
 `RTF = processing_seconds / audio_seconds`. Lower is faster: `0.5` means processing took half the audio duration; `1.0` means real time; above `1.0` means slower than real time. RTF alone does not measure accuracy, startup delay, battery, memory, or first-result latency.
 
-Run the bundled `benchmark_rtf.py` script with `<audio_seconds>` and `<processing_seconds>`:
+Run `benchmark_rtf.py` with `<audio_seconds>` and one or more measured run durations:
 
 ```bash
+# Single run
 python benchmark_rtf.py 30 4.5
+
+# Multi-run median, min, p95, max summary
+python benchmark_rtf.py 60 12.0 9.0 15.0 10.5 18.0
 ```
 
-Example output:
+Example outputs:
 
 ```text
 RTF: 0.1500
 Throughput: 6.67x real time
 Interpretation: faster than real time
+```
+
+```text
+Median RTF (5 runs): 0.2000 (min 0.1500, p95 0.3000, max 0.3000)
+Throughput: 5.00x real time
+Interpretation: faster than real time
+```
+
+Run the included unit tests:
+
+```bash
+python -m unittest test_benchmark_rtf.py -v
 ```
 
 ## Reproducible procedure
@@ -61,10 +109,11 @@ Compare your monthly transcription spend with the interactive **[Inkear break-ev
 
 ## More from Gr8 Apps & Games Studio
 
+- **[Play Interactive Android Puzzle Demos in Browser](https://simple-free-apps.github.io/demo/?utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=live-demo)** — Test Liquid Sort, LanternLoom & Kivorivane mechanics directly in your browser.
 - **[Chess With Sara: Learn & Play](https://play.google.com/store/apps/details?id=com.gr8.games.chess.chesswithai&utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=chesswithsara)** — Personal coach Sara explains moves by voice and writing in English and Arabic, plus 50,000 puzzles, online arenas, and 12 Stockfish 18 levels (free to play, optional IAP & ads; source code not for sale).
 - **[Psycho Mechanics: Physics](https://play.google.com/store/apps/details?id=com.gr8.games.crazymachines&utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=psychomechanics)** — Contraption puzzle builder with gears, ramps, magnets, and a free-build workshop; core gameplay works offline (free to play, optional IAP & ads; source code not for sale).
-- **[ChromaCircuit Starter (Free Open Source)](https://github.com/simple-free-apps/android-compose-puzzle-starter)** — 5-level Jetpack Compose & Canvas puzzle game starter with EN/AR RTL and procedural `AudioTrack` SFX.
-- **Live Play Demos with Commercial Source Kits:** [Liquid Sort Puzzle](https://play.google.com/store/apps/details?id=com.gr8.games.liquidsortpuzzle&utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=liquid-sort) ([Codester](https://www.codester.com/items/64630/liquid-sort-puzzle-kotlin-android-game-template?ref=Gr8Man)) and [Orvaleth: Clockwork Spires](https://play.google.com/store/apps/details?id=com.valkora.serenth.orvaleth&utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=orvaleth) ([Codester](https://www.codester.com/items/76144/orvaleth-godot-3d-clockwork-puzzle-game?ref=Gr8Man) · [Payhip](https://payhip.com/b/hWmcv)). See the full **[Android games showcase](https://simple-free-apps.github.io/android-games/)** or the **[Developer catalog](https://simple-free-apps.github.io/#catalog)**.
+- **Open-Source Starters & Utilities (GitHub):** [ChromaCircuit Starter](https://github.com/simple-free-apps/android-compose-puzzle-starter), [Compose PCM SFX (MIT)](https://github.com/simple-free-apps/compose-pcm-sfx), and [Godot 4 Android 3D Starter (MIT)](https://github.com/simple-free-apps/godot4-android-3d-starter).
+- **Commercial Source Kits (Payhip Instant Download $9–$12 / Codester $14):** [Soravel Puzzle Pack 5-in-1 (Payhip · $12)](https://payhip.com/b/beFfj), [Orvaleth 3D Godot (Payhip · $9)](https://payhip.com/b/hWmcv), [Veyravel 3D Godot (Payhip · $9)](https://payhip.com/b/Jv6fL), [Kivorivane (Payhip · $9)](https://payhip.com/b/WsHQp), and [Liquid Sort Puzzle (Codester · $14)](https://www.codester.com/items/64630/liquid-sort-puzzle-kotlin-android-game-template?ref=Gr8Man). See the **[Full Developer Catalog](https://simple-free-apps.github.io/#catalog)**.
 
 *Disclosure: Codester links above include the publisher's `?ref=Gr8Man` referral code.*
 
@@ -76,6 +125,7 @@ For developers with eligible, policy-compliant Android apps and active developer
 
 - [Android SpeechRecognizer API](https://developer.android.com/reference/android/speech/SpeechRecognizer)
 - [whisper.cpp official repository](https://github.com/ggml-org/whisper.cpp)
+- [whisper.cpp official GGML model table](https://github.com/ggml-org/whisper.cpp/blob/master/models/README.md)
 - [sherpa-onnx official repository](https://github.com/k2-fsa/sherpa-onnx)
 - [Vosk API documentation](https://alphacephei.com/vosk/)
 - [Google Play testing requirements](https://support.google.com/googleplay/android-developer/answer/14151465)
