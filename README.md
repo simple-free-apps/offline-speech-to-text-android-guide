@@ -2,7 +2,7 @@
 
 This guide compares practical on-device speech-recognition routes and explains how to measure them cleanly on Android hardware. Results depend heavily on model size, quantization, language, chipset, thermal state, and audio profile; no speed ranking is meaningful without those details.
 
-**Contents:** [At a glance](#at-a-glance) · [Official Whisper GGML disk sizes](#official-whispercpp-ggml-model-sizes) · [Android API & 16 kHz PCM pipeline](#android-api-31-check--16-khz-audio-pipeline) · [RTF calculator CLI](#reading-rtf--running-the-calculator) · [Reproducible procedure](#reproducible-procedure) · [Privacy checklist](#privacy-checklist) · [Ready-to-use app (Inkear)](#a-ready-to-use-offline-app-inkear) · [Studio catalog & services](#more-from-gr8-apps--games-studio)
+**Contents:** [At a glance](#at-a-glance) · [Official Whisper GGML disk sizes](#official-whispercpp-ggml-model-sizes) · [Android API & 16 kHz PCM pipeline](#android-api-31-check--16-khz-audio-pipeline) · [RTF calculator CLI](#reading-rtf--running-the-calculator) · [Reproducible procedure](#reproducible-procedure) · [Privacy checklist](#privacy-checklist) · [Ready-to-use app (Inkear)](#a-ready-to-use-offline-app-inkear) · [Studio catalog](#more-from-gr8-apps--games-studio)
 
 ## At a glance
 
@@ -113,13 +113,9 @@ Compare your monthly transcription spend with the interactive **[Inkear break-ev
 - **[Chess With Sara: Learn & Play](https://play.google.com/store/apps/details?id=com.gr8.games.chess.chesswithai&utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=chesswithsara)** — Personal coach Sara explains moves by voice and writing in English and Arabic, plus 50,000 puzzles, online arenas, and 12 Stockfish 18 levels (free to play, optional IAP & ads; source code not for sale).
 - **[Psycho Mechanics: Physics](https://play.google.com/store/apps/details?id=com.gr8.games.crazymachines&utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=psychomechanics)** — Contraption puzzle builder with gears, ramps, magnets, and a free-build workshop; core gameplay works offline (free to play, optional IAP & ads; source code not for sale).
 - **Open-Source Starters & Utilities (GitHub):** [ChromaCircuit Starter](https://github.com/simple-free-apps/android-compose-puzzle-starter), [Compose PCM SFX (MIT)](https://github.com/simple-free-apps/compose-pcm-sfx), and [Godot 4 Android 3D Starter (MIT)](https://github.com/simple-free-apps/godot4-android-3d-starter).
-- **Commercial Source Kits (Payhip Instant Download $9–$12 / Codester $14):** [Soravel Puzzle Pack 5-in-1 (Payhip · $12)](https://payhip.com/b/beFfj), [Orvaleth 3D Godot (Payhip · $9)](https://payhip.com/b/hWmcv), [Veyravel 3D Godot (Payhip · $9)](https://payhip.com/b/Jv6fL), [Kivorivane (Payhip · $9)](https://payhip.com/b/WsHQp), and [Liquid Sort Puzzle (Codester · $14)](https://www.codester.com/items/64630/liquid-sort-puzzle-kotlin-android-game-template?ref=Gr8Man). See the **[Full Developer Catalog](https://simple-free-apps.github.io/#catalog)**.
+- **Commercial Source Kits (Codester $14):** [Soravel Puzzle Pack 5-in-1 (Codester · $14)](https://www.codester.com/items/76186/puzzle-pack-5-in-1-kotlin-android-game-bundle?ref=Gr8Man), [Orvaleth 3D Godot (Codester · $14)](https://www.codester.com/items/76144/orvaleth-godot-3d-clockwork-puzzle-game?ref=Gr8Man), [Veyravel 3D Godot (Codester · $14)](https://www.codester.com/items/76079/veyravel-3d-android-action-game-godot?ref=Gr8Man), [Kivorivane (Codester · $14)](https://www.codester.com/items/76093/kivorivane-1000-levels-kite-escape-kotlin?ref=Gr8Man), and [Liquid Sort Puzzle (Codester · $14)](https://www.codester.com/items/64630/liquid-sort-puzzle-kotlin-android-game-template?ref=Gr8Man). See the **[Full Developer Catalog](https://simple-free-apps.github.io/#catalog)**.
 
 *Disclosure: Codester links above include the publisher's `?ref=Gr8Man` referral code.*
-
-## Publishing help ($45)
-
-For developers with eligible, policy-compliant Android apps and active developer accounts, we offer an **[assisted Google Play publishing and app transfer service](https://simple-free-apps.github.io/play-publish/?utm_source=offline-speech-to-text-android-guide&utm_medium=readme&utm_campaign=publishing-service)** ($45 after eligibility check). This does not bypass Google's closed-testing requirements (e.g., 12 testers for 14 continuous days on applicable new personal accounts), verification, or Play review.
 
 ## References
 
@@ -128,8 +124,6 @@ For developers with eligible, policy-compliant Android apps and active developer
 - [whisper.cpp official GGML model table](https://github.com/ggml-org/whisper.cpp/blob/master/models/README.md)
 - [sherpa-onnx official repository](https://github.com/k2-fsa/sherpa-onnx)
 - [Vosk API documentation](https://alphacephei.com/vosk/)
-- [Google Play testing requirements](https://support.google.com/googleplay/android-developer/answer/14151465)
-- [Google Play app transfer requirements](https://support.google.com/googleplay/android-developer/answer/6230247)
 
 ## License and contributions
 
